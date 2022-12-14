@@ -1,0 +1,14 @@
+/.vscode
+/____test____.csv
+/__pycache__
+/model_20221213_190154_0
+/model_20221213_190154_1
+/sample_submission_clean.txt
+/sync_main copy.ipynb
+/test.csv
+/test____.csv
+/test_data_clean_clean.txt
+/train_neg_clean_clean.txt
+/train_neg_full.txt
+/train_pos_clean_clean.txt
+/train_pos_full.txt
