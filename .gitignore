@@ -1,16 +1,26 @@
 /.vscode
 /____test____.csv
 /__pycache__
+/coco_pkl.pkl
+/main.ipynb
 /model_20221213_190154_0
 /model_20221213_190154_1
+/model_20221213_202314_0
+/model_20221213_202314_1
+/model_20221213_202314_2
+/runs
 /sample_submission_clean.txt
 /sync_main copy.ipynb
 /test.csv
 /test____.csv
 /test_data_clean_clean.txt
+/test_set_token.csv
 /train_neg_clean_clean.txt
 /train_neg_full.txt
 /train_pos_clean_clean.txt
 /train_pos_full.txt
-/coco_pkl.pkl
 /train_set_token.csv
+/twitter-datasets
+/vocab_cut.txt
+/vocab_full.txt
+/vocab_pkl.pkl
