@@ -71,7 +71,7 @@ def train_one_epoch(epoch_index, tb_writer):
                 tb_writer.add_scalar('Loss/train', last_loss, global_step = tb_x)
                 running_loss = 0.
 
-    return last_loss, running_accuracy/n_batches
+    return last_loss, running_accuracy/i
 
 
 class make_torch_dataset(torch.utils.data.Dataset):
@@ -129,15 +129,8 @@ class lstm_classifier(Module):
 DATA_PATH = 'twitter-datasets'
 Dataset = read(DATA_PATH)
 
-vocab_cut = 'vocab_cut.txt'
-vocab_pkl = 'vocab_pkl.pkl'
-coco_pkl = 'coco_pkl.pkl'
-embd = 'embeddings'
 
-with open(coco_pkl, "rb") as f:
-        cooc = pickle.load(f)
-with open(vocab_pkl, "rb") as f:
-        vocab = pickle.load(f)
+embd = 'embeddings'
 embedding = np.load(embd+'.npy')
 glove_embd = embedding
 
