@@ -7,11 +7,12 @@ import numpy as np
 def read(DATA_PATH):
     Dataset = {}
     filenames = [f for f in listdir(DATA_PATH) if isfile(join(DATA_PATH, f))]
-    print(filenames)
     for filename in filenames:
-        with open(DATA_PATH + '/' + filename, 'r') as f:
-            lines = f.read().splitlines() 
-            Dataset[filename[:-4]] = lines
+        if filename[-4:] == '.txt':
+            print(filename)
+            with open(DATA_PATH + '/' + filename, 'r') as f:
+                lines = f.read().splitlines() 
+                Dataset[filename[:-4]] = lines
     return Dataset
 
 def re_sub(pattern, repl, text):
@@ -66,9 +67,9 @@ def remove_repeated(datarow):
     datarow.drop_duplicates(inplace = True )
     return datarow
 
-def save_to_file(Dataset):
+def save_to_file(Dataset, DATA_PATH=''):
     for key in Dataset.keys():
-        np.savetxt(str(key) + '_clean.txt', Dataset[key].values, fmt='%s')
+        np.savetxt(DATA_PATH+ '/' + str(key) + '_clean.txt', Dataset[key].values, fmt='%s')
 def read_test_file(filename):
     """
     DESCRIPTION: 
@@ -99,6 +100,33 @@ def read_data(dataset):
     train_pos = train_pos[0].str.split(' ', expand = True)
     train_pos['sentiment'] = 1
     train_neg =  pd.DataFrame(dataset['train_neg_clean'])
+    train_neg = train_neg.applymap(lambda x: x.strip())
+    train_neg = train_neg[0].str.split(' ', expand = True)
+    train_neg['sentiment'] = 0
+    test_data =  pd.DataFrame(dataset['test_data_clean'])
+    test_data = test_data.applymap(lambda x: x.partition('>')[2])
+    test_data = test_data.applymap(lambda x: x.strip())
+    
+    test_data = test_data[0].str.split(' ', expand = True)
+
+    return train_pos, train_neg, test_data
+
+def read_data_full(dataset):
+    """
+    DESCRIPTION: 
+            reads training data from the files and stores them into dataframes
+    INPUT: 
+            data_path: the directory path to the data files
+    RETURN: 
+            train_pos: df with the positive training tweets
+            train_neg: df with the negative training tweets
+            test_data: df with the test tweets
+    """
+    train_pos = pd.DataFrame(dataset['train_pos_full_clean'])
+    train_pos = train_pos.applymap(lambda x: x.strip())
+    train_pos = train_pos[0].str.split(' ', expand = True)
+    train_pos['sentiment'] = 1
+    train_neg =  pd.DataFrame(dataset['train_neg_full_clean'])
     train_neg = train_neg.applymap(lambda x: x.strip())
     train_neg = train_neg[0].str.split(' ', expand = True)
     train_neg['sentiment'] = 0

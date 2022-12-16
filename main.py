@@ -126,21 +126,21 @@ class lstm_classifier(Module):
         return x
 
 ##data preprocessing 
-DATA_PATH = 'twitter-datasets'
+DATA_PATH = 'full_data/'
 Dataset = read(DATA_PATH)
 
 
-embd = 'embeddings'
+embd = DATA_PATH+'embeddings_20'
 embedding = np.load(embd+'.npy')
 glove_embd = embedding
 
 
-test_set = pd.read_csv('test_set_token.csv')
-train_set = pd.read_csv('train_set_token.csv', )
+test_set = pd.read_csv(DATA_PATH+'test_set_token.csv')
+train_set = pd.read_csv(DATA_PATH+'train_set_token_full.csv', )
 num_embeddings  = glove_embd.shape[0]
 embed_dim = glove_embd.shape[1]
 max_len = train_set.shape[1]-1
-batch_size = 16
+batch_size = 256
 n_batches = train_set.shape[0]/batch_size
 
 X_train = train_set.loc[:, train_set.columns!='sentiment']
@@ -188,9 +188,9 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # starting main training loop
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-writer = SummaryWriter('runs/fashion_trainer_{}'.format(timestamp))
+writer = SummaryWriter('full_runs/fashion_trainer_{}'.format(timestamp))
 
-EPOCHS = 5
+EPOCHS = 10
 
 best_vloss = 1_000_000.
 

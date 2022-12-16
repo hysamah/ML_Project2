@@ -3,6 +3,8 @@ from scipy.sparse import *
 import numpy as np
 import pickle
 import random
+from tqdm import tqdm
+
 
 
 vocab_cut = "vocab_cut.txt"
@@ -51,7 +53,7 @@ def cooc_(vocab_pkl, DATA_PATH, cooc_pkl, data = 0):
 
 
 
-def glove(cooc_pkl, embd):
+def glove(cooc_pkl, embd, n_emd =20):
     print("loading cooccurrence matrix")
     with open(cooc_pkl, "rb") as f:
         cooc = pickle.load(f)
@@ -61,7 +63,7 @@ def glove(cooc_pkl, embd):
     print("using nmax =", nmax, ", cooc.max() =", cooc.max())
 
     print("initializing embeddings")
-    embedding_dim = 20
+    embedding_dim = n_emd
     xs = np.random.normal(size=(cooc.shape[0], embedding_dim))
     ys = np.random.normal(size=(cooc.shape[1], embedding_dim))
 
@@ -72,7 +74,7 @@ def glove(cooc_pkl, embd):
 
     for epoch in range(epochs):
         print("epoch {}".format(epoch))
-        for ix, jy, n in zip(cooc.row, cooc.col, cooc.data):
+        for ix, jy, n in tqdm(zip(cooc.row, cooc.col, cooc.data)):
             logn = np.log(n)
             fn = min(1.0, (n / nmax) ** alpha)
             x, y = xs[ix, :], ys[jy, :]
