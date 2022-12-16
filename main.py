@@ -98,7 +98,7 @@ class make_torch_testset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.encodings)
 
-class lstm_classifier(Module):
+class Blstm_classifier(Module):
     def __init__(self, num_embeddings, embed_dim, glove_embd, max_len) -> None:
         super().__init__()
         self.emd =  Embedding(num_embeddings= num_embeddings, embedding_dim= embed_dim, _weight=glove_embd)
@@ -124,13 +124,40 @@ class lstm_classifier(Module):
         x = x.reshape(x.shape[0])
 
         return x
+class lstm_classifier(Module):
+    def __init__(self, num_embeddings, embed_dim, glove_embd, max_len) -> None:
+        super().__init__()
+        self.emd =  Embedding(num_embeddings= num_embeddings, embedding_dim= embed_dim, _weight=glove_embd)
+        self.lstm1 = LSTM(input_size = embed_dim, hidden_size = 256,batch_first  = True)
+        self.lstm2 = LSTM(input_size = 256, hidden_size = 150, batch_first  = True)
+        self.fc1 = Linear(150,128)
+        self.drp = Dropout(0.1)
+        self.fc2 = Linear(128, 64)
+        self.fc3 = Linear(64,1)
+        self.reg = Sigmoid()
+
+
+    def forward(self, x):
+        x = self.emd(x)
+        x = x.to(torch.float32)
+        x, _ = self.lstm1(x)
+        x, _ = self.lstm2(x)
+        x = F.relu(self.fc1(x[:,0]))
+        x = self.drp(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        x = self.reg(x)
+        x = x.reshape(x.shape[0])
+
+        return x
+
 
 ##data preprocessing 
 DATA_PATH = 'full_data/'
 Dataset = read(DATA_PATH)
 
 
-embd = DATA_PATH+'embeddings_20'
+embd = DATA_PATH+'embeddings_50'
 embedding = np.load(embd+'.npy')
 glove_embd = embedding
 
@@ -147,7 +174,7 @@ X_train = train_set.loc[:, train_set.columns!='sentiment']
 Y_train = train_set['sentiment']
 device = torch.device('cpu')
 if torch.cuda.is_available():
-    device = torch.device('cuda:1')
+    device = torch.device('cuda')
 glove_embd = torch.tensor(glove_embd)
 
 data_split = (X_train.shape[0]*0.2)%batch_size
@@ -182,7 +209,7 @@ print('Test set has {} instances'.format(len(test_dataset)))
 
 
 # initializing model and losses
-model = lstm_classifier(num_embeddings, embed_dim, glove_embd, max_len).to(device)
+model = Blstm_classifier(num_embeddings, embed_dim, glove_embd, max_len).to(device)
 loss_fn = torch.nn.BCELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
