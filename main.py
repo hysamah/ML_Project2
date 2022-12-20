@@ -3,7 +3,7 @@ from helpers import *
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score
 import torch
-from torch.nn import Sequential, Module, LSTM, ReLU, Linear, Sigmoid, Dropout, Embedding
+from torch.nn import Sequential, Module, LSTM, ReLU, Linear, Sigmoid, Dropout, Embedding, RNN
 import torchvision
 # PyTorch TensorBoard support
 from torch.utils.tensorboard import SummaryWriter
@@ -58,6 +58,7 @@ def train_one_epoch(epoch_index, tb_writer):
 
             # Adjust learning weights
             optimizer.step()
+            
             # Gather data and report
             running_loss += loss.item()
             running_accuracy += accuracy
@@ -124,6 +125,32 @@ class Blstm_classifier(Module):
         x = x.reshape(x.shape[0])
 
         return x
+
+
+class RNN_classifier(Module):
+    def __init__(self, num_embeddings, embed_dim, glove_embd, max_len) -> None:
+        super().__init__()
+        self.emd =  Embedding(num_embeddings= num_embeddings, embedding_dim= embed_dim, _weight=glove_embd)
+        self.rnn1 = RNN(input_size = embed_dim, hidden_size = 256, batch_first = True)
+        self.fc1 = Linear(256,128)
+        self.drp = Dropout(0.1)
+        self.fc2 = Linear(128, 64)
+        self.fc3 = Linear(64,1)
+        self.reg = Sigmoid()
+
+
+    def forward(self, x):
+        x = self.emd(x)
+        x = x.to(torch.float32)
+        x, _ = self.rnn1(x)
+        x = F.relu(self.fc1(x[:,0]))
+        x = self.drp(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        x = self.reg(x)
+        x = x.reshape(x.shape[0])
+
+        return x
 class lstm_classifier(Module):
     def __init__(self, num_embeddings, embed_dim, glove_embd, max_len) -> None:
         super().__init__()
@@ -157,7 +184,7 @@ DATA_PATH = 'full_data/'
 Dataset = read(DATA_PATH)
 
 
-embd = DATA_PATH+'embeddings_50'
+embd = DATA_PATH+'embeddings_100'
 embedding = np.load(embd+'.npy')
 glove_embd = embedding
 
@@ -212,12 +239,14 @@ print('Test set has {} instances'.format(len(test_dataset)))
 model = Blstm_classifier(num_embeddings, embed_dim, glove_embd, max_len).to(device)
 loss_fn = torch.nn.BCELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[2,4], gamma=0.5)
+
 
 # starting main training loop
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 writer = SummaryWriter('full_runs/fashion_trainer_{}'.format(timestamp))
 
-EPOCHS = 10
+EPOCHS = 6
 
 best_vloss = 1_000_000.
 
@@ -229,6 +258,7 @@ for epoch in range(EPOCHS):
     # Make sure gradient tracking is on, and do a pass over the data
     model.train(True)
     avg_loss, acc = train_one_epoch(epoch, writer)
+    scheduler.step()
 
     # # We don't need gradients on to do reporting
     model.train(False)

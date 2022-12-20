@@ -2,7 +2,7 @@ from course_helpers import *
 from helpers import *
 
 DATA_PATH = 'full_data/'
-n_emd = 50
+n_emd = 100
 Dataset = read(DATA_PATH)
 print('reading done')
 coco_pkl = DATA_PATH+'coco_pkl.pkl'
